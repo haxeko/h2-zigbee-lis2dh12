@@ -100,7 +100,7 @@ converter OK
 ## 3. Ghép nối (join)
 
 1. Trong Z2M bật **Permit join** (giao diện web hoặc `zigbee2mqtt/bridge/request/permit_join`).
-2. Cấp nguồn cho badge (cắm pin) hoặc **nhấn nút ngắn**. LED sáng trong lúc badge tìm mạng
+2. Cấp nguồn cho badge (nối pin hoặc nhấn RESET) hoặc **nhấn nút BOOT ngắn**. LED sáng trong lúc badge tìm mạng
    (tối đa 180 s, quét kênh 11–26).
 3. Khi vào mạng, badge **thức thêm 45 s và poll parent mỗi giây** để Z2M đọc node descriptor,
    endpoint, Basic cluster (interview). Hết 45 s nó gửi báo cáo đầu tiên rồi vào chu kỳ ngủ.

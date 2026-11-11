@@ -80,14 +80,15 @@ PARTS = [
     ("J1", "USB-C 16P", "Connector:USB_C_Receptacle_USB2.0_16P",
      "Connector_USB:USB_C_Receptacle_HRO_TYPE-C-31-M-12",
      "TYPE-C-31-M-12", "USB Type-C receptacle, USB 2.0, 16 pin, SMD (HRO)", ""),
-    ("J2", "JST-PH 2P (LiPo)", "Connector_Generic_MountingPin:Conn_01x02_MountingPin",
-     "Connector_JST:JST_PH_S2B-PH-SM4-TB_1x02-1MP_P2.00mm_Horizontal",
-     "S2B-PH-SM4-TB", "JST PH 2-pin SMD horizontal battery connector",
-     "Pin 1 = BAT+, pin 2 = BAT-. Check the cell's connector polarity before plugging in"),
-    ("SW1", "BOOT/USER", "Switch:SW_Push", "Button_Switch_SMD:SW_SPST_TL3342",
-     "TL3342F160QG", "Tactile switch SPST, SMD", "GPIO9: boot strap + user button; " + EQ),
-    ("SW2", "RESET", "Switch:SW_Push", "Button_Switch_SMD:SW_SPST_TL3342",
-     "TL3342F160QG", "Tactile switch SPST, SMD", "EN to GND; " + EQ),
+    ("J2", "LiPo pads", "Connector_Generic:Conn_01x02",
+     "badge:BatteryPads_1x02_P4.0mm",
+     "", "Solder pads for the LiPo leads (bottom side, 2.0 x 3.0 mm, 4 mm pitch)",
+     "Pad 1 = BAT+, pad 2 = BAT-. No part to fit: solder the cell leads and secure them"),
+    ("SW1", "BOOT/USER", "Switch:SW_Push", "Button_Switch_SMD:SW_SPST_B3U-1000P",
+     "B3U-1000P", "Tactile switch SPST 3 x 2.5 mm, top actuated (Omron B3U)",
+     "GPIO9: boot strap + user button; " + EQ),
+    ("SW2", "RESET", "Switch:SW_Push", "Button_Switch_SMD:SW_SPST_B3U-1000P",
+     "B3U-1000P", "Tactile switch SPST 3 x 2.5 mm, top actuated (Omron B3U)", "EN to GND; " + EQ),
     ("D1", "GREEN", "Device:LED", "LED_SMD:LED_0603_1608Metric",
      "LTST-C191KGKT", "LED green 0603 (status)", EQ),
     ("D2", "ORANGE", "Device:LED", "LED_SMD:LED_0603_1608Metric",
@@ -137,7 +138,7 @@ DATASHEET = {
 # LED pins: 1 = K, 2 = A.  MOSFET pins: 1 = G, 2 = S, 3 = D.
 NETS = {
     "GND": ["J1.A1", "J1.A12", "J1.B1", "J1.B12", "J1.S1", "R1.2", "R2.2", "R3.2", "U4.2", "C1.2", "C2.2",
-            "J2.2", "J2.MP", "U3.2", "C3.2", "C4.2", "U1.9", "U1.13", "U1.29", "C5.2", "C6.2",
+            "J2.2", "U3.2", "C3.2", "C4.2", "U1.9", "U1.13", "U1.29", "C5.2", "C6.2",
             "U2.5", "U2.6", "U2.7", "U2.8", "C7.2", "C8.2", "C9.2", "U5.2", "Q2.2", "R11.2", "R13.2",
             "C10.2", "SW1.2", "SW2.2", "C11.2", "D1.1", "TP2.1"],
     "VBUS": ["J1.A4", "J1.A9", "J1.B4", "J1.B9", "C1.1", "U4.4", "U5.5", "R4.1"],
@@ -299,7 +300,7 @@ NOTES = {
     "chg": (2.54, 99.06,
             "Ichg = 1000 V / R3 = 213 mA (R3 = 4.7k): size R3 for <= 0.5 C of the cell.\n"
             "D2 lit = charging (STAT low).  No power-path: the load stays on the battery.\n"
-            "J2 pin 1 = BAT+, pin 2 = BAT-.  CHECK THE CELL POLARITY, JST-PH has no standard."),
+            "J2 = solder pads on the bottom side: pad 1 = BAT+, pad 2 = BAT-.  CHECK THE POLARITY."),
     "ldo": (2.54, 40.64,
             "RT9080-33GJ5: Iq 2 uA, 600 mA.  EN tied to VIN (always on).\n"
             "Pinout 1=VIN 2=GND 3=EN 4=NC 5=VOUT, same as\n"
@@ -981,23 +982,73 @@ def build_footprint():
     return "\n".join(out) + "\n"
 
 
+# PCB design rules: 4-layer board, 0.15 mm track / space, 0.45 / 0.2 mm vias.
+# Shared with gen_pcb.py, which lays the board out to these numbers.
+PCB_TRACK = {"signal": 0.15, "power": 0.3}
+PCB_RULES = {
+    "allow_blind_buried_vias": False, "allow_microvias": False, "max_error": 0.005,
+    "min_clearance": 0.15, "min_connection": 0.0, "min_copper_edge_clearance": 0.3,
+    "min_hole_clearance": 0.2, "min_hole_to_hole": 0.25,
+    "min_microvia_diameter": 0.2, "min_microvia_drill": 0.1, "min_resolved_spokes": 1,
+    "min_silk_clearance": 0.0, "min_text_height": 0.6, "min_text_thickness": 0.08,
+    "min_through_hole_diameter": 0.2, "min_track_width": 0.15, "min_via_annular_width": 0.1,
+    "min_via_diameter": 0.45, "solder_mask_clearance": 0.0, "solder_mask_min_width": 0.0,
+    "solder_mask_to_copper_clearance": 0.0, "use_height_for_length_calcs": True,
+}
+# The footprint-library checks need the user's global library table, which a
+# scripted run does not have; everything else keeps KiCad's default severity.
+PCB_RULE_SEVERITIES = {"lib_footprint_issues": "ignore", "lib_footprint_mismatch": "ignore"}
+
+
+def build_battery_footprint():
+    """Two SMD pads for the LiPo leads. Placed on the bottom side by gen_pcb.py."""
+    name = "BatteryPads_1x02_P4.0mm"
+
+    def ts(key):
+        return "(tstamp %s)" % uid("fpbat:" + key)
+
+    out = ['(footprint "%s" (version 20221018) (generator gen_kicad) (layer "F.Cu")' % name,
+           '  (descr "Solder pads for LiPo battery leads, 2.0 x 3.0 mm, 4.0 mm pitch. Pad 1 = +, pad 2 = -")',
+           '  (tags "battery wire solder pads")', "  (attr smd exclude_from_pos_files exclude_from_bom)",
+           '  (fp_text reference "REF**" (at 0 -2.4) (layer "F.SilkS") %s\n'
+           "    (effects (font (size 0.8 0.8) (thickness 0.12))))" % ts("ref"),
+           '  (fp_text value "%s" (at 0 2.6) (layer "F.Fab") %s\n'
+           "    (effects (font (size 0.8 0.8) (thickness 0.12))))" % (name, ts("val")),
+           '  (fp_text user "+" (at -2 -2.3) (layer "F.SilkS") %s\n'
+           "    (effects (font (size 1 1) (thickness 0.15))))" % ts("plus"),
+           '  (fp_text user "-" (at 2 -2.3) (layer "F.SilkS") %s\n'
+           "    (effects (font (size 1 1) (thickness 0.15))))" % ts("minus")]
+    for (x0, y0, x1, y1, key) in ((-3.25, -1.75, 3.25, -1.75, "c1"), (3.25, -1.75, 3.25, 1.75, "c2"),
+                                  (3.25, 1.75, -3.25, 1.75, "c3"), (-3.25, 1.75, -3.25, -1.75, "c4")):
+        out.append('  (fp_line (start %s %s) (end %s %s)\n    (stroke (width 0.05) (type solid)) (layer "F.CrtYd") %s)'
+                   % (num(x0), num(y0), num(x1), num(y1), ts(key)))
+    for number, x in (("1", -2.0), ("2", 2.0)):
+        out.append('  (pad "%s" smd roundrect (at %s 0) (size 2 3) (layers "F.Cu" "F.Mask") '
+                   "(roundrect_rratio 0.15) %s)" % (number, num(x), ts("pad" + number)))
+    out.append(")")
+    return "\n".join(out) + "\n"
+
+
 def project_json(root_uuid):
-    def netclass(name, track, clearance=0.2):
+    def netclass(name, track, clearance=PCB_RULES["min_clearance"]):
         return {"bus_width": 12, "clearance": clearance, "diff_pair_gap": 0.25, "diff_pair_via_gap": 0.25,
                 "diff_pair_width": 0.2, "line_style": 0, "microvia_diameter": 0.3, "microvia_drill": 0.1,
                 "name": name, "pcb_color": "rgba(0, 0, 0, 0.000)", "schematic_color": "rgba(0, 0, 0, 0.000)",
-                "track_width": track, "via_diameter": 0.6, "via_drill": 0.3, "wire_width": 6}
+                "track_width": track, "via_diameter": PCB_RULES["min_via_diameter"],
+                "via_drill": PCB_RULES["min_through_hole_diameter"], "wire_width": 6}
     return {
-        "board": {"3dviewports": [], "design_settings": {"defaults": {}, "diff_pair_dimensions": [],
-                                                           "drc_exclusions": [], "rules": {}, "track_widths": [],
-                                                           "via_dimensions": []},
+        "board": {"3dviewports": [],
+                  "design_settings": {"defaults": {}, "diff_pair_dimensions": [], "drc_exclusions": [],
+                                      "rule_severities": PCB_RULE_SEVERITIES, "rules": PCB_RULES,
+                                      "track_widths": [0.0, PCB_TRACK["signal"], PCB_TRACK["power"]],
+                                      "via_dimensions": [{"diameter": 0.0, "drill": 0.0}]},
                   "layer_presets": [], "viewports": []},
         "boards": [],
         "cvpcb": {"equivalence_files": []},
         "libraries": {"pinned_footprint_libs": [], "pinned_symbol_libs": []},
         "meta": {"filename": PROJECT + ".kicad_pro", "version": 1},
         "net_settings": {
-            "classes": [netclass("Default", 0.2), netclass("Power", 0.4)],
+            "classes": [netclass("Default", PCB_TRACK["signal"]), netclass("Power", PCB_TRACK["power"])],
             "meta": {"version": 3},
             "net_colors": None,
             "netclass_assignments": None,
@@ -1180,6 +1231,7 @@ def main():
     sym_lib += [f() for f in LOCAL_SYMBOLS.values()]
     write(os.path.join(KICAD_DIR, "badge.kicad_sym"), sx_dump(sym_lib) + "\n")
     write(os.path.join(KICAD_DIR, "badge.pretty", "ESP32-H2-WROOM-02C.kicad_mod"), build_footprint())
+    write(os.path.join(KICAD_DIR, "badge.pretty", "BatteryPads_1x02_P4.0mm.kicad_mod"), build_battery_footprint())
     write(os.path.join(KICAD_DIR, "sym-lib-table"),
           '(sym_lib_table\n  (lib (name "badge")(type "KiCad")(uri "${KIPRJMOD}/badge.kicad_sym")(options "")'
           '(descr "Activity badge: project symbols"))\n)\n')

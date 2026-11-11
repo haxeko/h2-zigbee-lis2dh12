@@ -119,7 +119,7 @@ gần nhất, phù hợp với người đeo di chuyển liên tục. Chuyển c
 
 ## 7. Cách đo
 
-- Cắt đường VBAT tại đầu nối pin, cấp nguồn 3,8–4,0 V qua Nordic PPK2 / Joulescope / Otii (dải
+- Tháo pin, cấp nguồn 3,8–4,0 V vào hai pad pin qua Nordic PPK2 / Joulescope / Otii (dải
   động từ µA đến hàng chục mA, lấy mẫu ≥ 10 kHz để thấy xung phát).
 - Tháo cáp USB và bộ USB-UART khi đo (chúng cấp dòng ngược qua chân IO).
 - Đo riêng: nền ngủ (kỳ vọng ~12 µA / ~30 µA), một lần thức đọc FIFO, một lần thức báo cáo; lấy

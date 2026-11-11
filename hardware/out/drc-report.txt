@@ -1,0 +1,10 @@
+** Drc report for /home/user/h2-zigbee-lis2dh12/hardware/kicad/activity-badge.kicad_pcb **
+** Created on 2026-11-11 12:47:40 **
+
+** Found 0 DRC violations **
+
+** Found 0 unconnected pads **
+
+** Found 0 Footprint errors **
+
+** End of Report **

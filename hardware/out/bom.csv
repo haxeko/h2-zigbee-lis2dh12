@@ -9,9 +9,9 @@ Q2,1,2N7002,"N-channel MOSFET 60 V, SOT-23 (level shifter for Q1 gate)",Package_
 D1,1,GREEN,LED green 0603 (status),LED_SMD:LED_0603_1608Metric,LTST-C191KGKT,or equivalent
 D2,1,ORANGE,LED orange 0603 (charging),LED_SMD:LED_0603_1608Metric,LTST-C191KFKT,or equivalent
 J1,1,USB-C 16P,"USB Type-C receptacle, USB 2.0, 16 pin, SMD (HRO)",Connector_USB:USB_C_Receptacle_HRO_TYPE-C-31-M-12,TYPE-C-31-M-12,
-J2,1,JST-PH 2P (LiPo),JST PH 2-pin SMD horizontal battery connector,Connector_JST:JST_PH_S2B-PH-SM4-TB_1x02-1MP_P2.00mm_Horizontal,S2B-PH-SM4-TB,"Pin 1 = BAT+, pin 2 = BAT-. Check the cell's connector polarity before plugging in"
-SW1,1,BOOT/USER,"Tactile switch SPST, SMD",Button_Switch_SMD:SW_SPST_TL3342,TL3342F160QG,GPIO9: boot strap + user button; or equivalent
-SW2,1,RESET,"Tactile switch SPST, SMD",Button_Switch_SMD:SW_SPST_TL3342,TL3342F160QG,EN to GND; or equivalent
+J2,1,LiPo pads,"Solder pads for the LiPo leads (bottom side, 2.0 x 3.0 mm, 4 mm pitch)",badge:BatteryPads_1x02_P4.0mm,,"Pad 1 = BAT+, pad 2 = BAT-. No part to fit: solder the cell leads and secure them"
+SW1,1,BOOT/USER,"Tactile switch SPST 3 x 2.5 mm, top actuated (Omron B3U)",Button_Switch_SMD:SW_SPST_B3U-1000P,B3U-1000P,GPIO9: boot strap + user button; or equivalent
+SW2,1,RESET,"Tactile switch SPST 3 x 2.5 mm, top actuated (Omron B3U)",Button_Switch_SMD:SW_SPST_B3U-1000P,B3U-1000P,EN to GND; or equivalent
 "R1, R2",2,5.1k,Resistor 5.1 k 1% 0402,Resistor_SMD:R_0402_1005Metric,RC0402FR-075K1L,or equivalent
 R3,1,4.7k,Resistor 4.7 k 1% 0402,Resistor_SMD:R_0402_1005Metric,RC0402FR-074K7L,Ichg = 1000 V / R3; or equivalent
 R4,1,1k,Resistor 1 k 1% 0402,Resistor_SMD:R_0402_1005Metric,RC0402FR-071KL,or equivalent

@@ -151,8 +151,8 @@ idf.py -p /dev/ttyACM0 erase-flash
 
 ### Xem log
 
-Console nằm trên **UART0** (TP4 = TXD0/GPIO24, TP5 = RXD0/GPIO23, 115200 baud) vì USB không sống
-qua các chế độ ngủ. Nối một bộ USB-UART 3,3 V vào hai pad này:
+Console nằm trên **UART0** (pad TX = TXD0/GPIO24, pad RX = RXD0/GPIO23 ở mặt dưới board, 115200 baud)
+vì USB không sống qua các chế độ ngủ. Nối một bộ USB-UART 3,3 V vào hai pad này và GND:
 
 ```bash
 idf.py -p /dev/ttyUSB0 monitor
