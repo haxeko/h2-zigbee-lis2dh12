@@ -9,7 +9,8 @@ Output: hardware/kicad/activity-badge.kicad_pcb, fully routed, zones filled,
         fab_outputs.py.
 
 Board: 20 x 36 mm, 4 copper layers (F.Cu signals + parts / In1 GND plane /
-In2 +3V3 plane / B.Cu signals + GND pour), all parts on the top side, battery
+In2 +3V3 plane / B.Cu signals + GND pour), vias 0.6 mm with a 0.3 mm hole, all
+parts on the top side, battery
 pads and test pads on the bottom. The module's antenna overhangs the top edge.
 
 Routing: the fine-pitch escapes (USB-C, accelerometer), the module decoupling
@@ -24,6 +25,7 @@ Linux, KiCad's bundled one on Windows/macOS):
 """
 import math
 import os
+import subprocess
 import sys
 import time
 
@@ -195,20 +197,21 @@ def pre_routes():
 
     # --- USB-C J1 (10, 33) with U5 (10, 25), R1, R2, C1. The inner D- pad joins the
     #     outer one above the D+ pad, whose own link goes through a via to the bottom layer.
-    t += [("USB_CONN_DN", F, s, [(9.25, 28.6), (9.25, 27.35), (9.05, 27.15), (9.05, 26.3)]),      # B7 -> U5.4
+    #     B7 steps aside early so that a 0.6 mm via fits between it and A7.
+    t += [("USB_CONN_DN", F, s, [(9.25, 28.6), (9.25, 28.15), (9.05, 27.95), (9.05, 27.15), (9.05, 26.3)]),  # B7 -> U5.4
           ("USB_CONN_DP", F, s, [(10.75, 28.6), (10.75, 27.35), (10.95, 27.15), (10.95, 26.3)]),  # B6 -> U5.6
-          ("USB_CONN_DP", F, s, [(9.75, 28.6), (9.75, 27.85)]),                                   # A6 -> via
+          ("USB_CONN_DP", F, s, [(9.75, 28.6), (9.75, 28.2), (9.65, 28.1), (9.65, 27.75)]),       # A6 -> via
           ("USB_CONN_DN", F, s, [(10.25, 28.6), (10.25, 27.45), (9.95, 27.15), (9.05, 27.15)]),   # A7 -> B7
           ("USB_CONN_DN", F, s, [(9.05, 26.0), (9.05, 24.0)]),                                    # U5.4 - U5.3
           ("USB_CONN_DP", F, s, [(10.95, 26.0), (10.95, 24.0)]),                                  # U5.6 - U5.1
           ("USB_CONN_DN", F, s, [(9.05, 23.4), (9.05, 22.9), (9.3, 22.65), (9.3, 22.4)]),         # U5.3 - R15.1
           ("USB_CONN_DP", F, s, [(10.95, 23.4), (10.95, 22.9), (10.7, 22.65), (10.7, 22.4)]),     # U5.1 - R14.1
-          ("CC1", F, s, [(8.75, 28.6), (8.75, 27.95), (8.15, 27.35), (7.8, 27.35)]),
+          ("CC1", F, s, [(8.75, 28.6), (8.75, 28.2), (7.9, 27.35)]),
           ("CC2", F, s, [(11.75, 28.6), (11.75, 27.95), (12.2, 27.5), (12.2, 27.35)]),
           ("VBUS", F, p, [(7.55, 28.6), (7.55, 27.9), (6.95, 27.9), (6.6, 27.55), (6.6, 27.25)]),  # -> C1
           ("VBUS", F, p, [(12.45, 28.6), (12.45, 27.9), (13.0, 27.9), (13.3, 27.6)]),             # -> via
-          ("VBUS", F, f, [(10.0, 25.0), (10.0, 25.7)])]                                           # U5.5 -> via
-    v += [("USB_CONN_DP", 9.75, 27.85), ("VBUS", 13.3, 27.6), ("VBUS", 10.0, 25.0)]
+          ("VBUS", F, f, [(10.0, 25.05), (10.0, 25.7)])]                                          # U5.5 -> via
+    v += [("USB_CONN_DP", 9.65, 27.75), ("VBUS", 13.3, 27.6), ("VBUS", 10.0, 25.05)]
     return t, v
 
 
@@ -664,6 +667,99 @@ def check_against_netlist(board):
     return errors
 
 
+def _mm(p):
+    return (pcbnew.ToMM(p.x), pcbnew.ToMM(p.y))
+
+
+def _seg_dist(p, a, b):
+    (px, py), (ax, ay), (bx, by) = p, a, b
+    dx, dy = bx - ax, by - ay
+    length2 = dx * dx + dy * dy
+    t = 0.0 if length2 == 0 else max(0.0, min(1.0, ((px - ax) * dx + (py - ay) * dy) / length2))
+    return math.hypot(px - (ax + t * dx), py - (ay + t * dy))
+
+
+def prune_dangling(board):
+    """
+    Remove dead copper: vias that connect on one layer only and track ends that
+    lead nowhere. They are left over when the router reached a pad without
+    needing a hand-placed via. Connectivity is preserved: a via that served as
+    a junction on its one layer is replaced by short track links, and a dangling
+    track that other tracks branch off from is only shortened.
+    Returns the number of items removed or shortened.
+    """
+    board.BuildConnectivity()
+    connectivity = board.GetConnectivity()
+    flagged = [t for t in board.GetTracks() if connectivity.TestTrackEndpointDangling(t, True)]
+    changed = 0
+    for item in flagged:
+        net = item.GetNetCode()
+        same_net = [t for t in board.GetTracks() if t.GetNetCode() == net and t.m_Uuid != item.m_Uuid]
+        tracks = [t for t in same_net if t.GetClass() == "PCB_TRACK"]
+        if item.GetClass() == "PCB_VIA":
+            centre, radius = _mm(item.GetPosition()), pcbnew.ToMM(item.GetWidth()) / 2
+            for t in tracks:
+                for end in (t.GetStart(), t.GetEnd()):
+                    d = math.dist(_mm(end), centre)
+                    if 1e-4 < d <= radius:            # ended on the via's ring: link it to the centre
+                        link = pcbnew.PCB_TRACK(board)
+                        link.SetStart(end)
+                        link.SetEnd(item.GetPosition())
+                        link.SetWidth(t.GetWidth())
+                        link.SetLayer(t.GetLayer())
+                        link.SetNetCode(net)
+                        board.Add(link)
+            board.Remove(item)
+            changed += 1
+            continue
+
+        layer, half = item.GetLayer(), pcbnew.ToMM(item.GetWidth()) / 2
+        a, b = _mm(item.GetStart()), _mm(item.GetEnd())
+
+        def attached(point):
+            for pad in board.GetPads():
+                if pad.GetNetCode() == net and pad.IsOnLayer(layer) and pad.HitTest(pcbnew.VECTOR2I(
+                        pcbnew.FromMM(point[0]), pcbnew.FromMM(point[1]))):
+                    return True
+            for t in same_net:
+                if t.GetClass() == "PCB_VIA":
+                    if math.dist(point, _mm(t.GetPosition())) <= pcbnew.ToMM(t.GetWidth()) / 2:
+                        return True
+                elif t.GetLayer() == layer and _seg_dist(point, _mm(t.GetStart()), _mm(t.GetEnd())) <= pcbnew.ToMM(
+                        t.GetWidth()) / 2:
+                    return True
+            return False
+
+        a_ok, b_ok = attached(a), attached(b)
+        if a_ok and b_ok:
+            continue
+        if not a_ok and not b_ok:
+            board.Remove(item)
+            changed += 1
+            continue
+        keep, loose = (a, b) if a_ok else (b, a)
+        # other tracks that branch off this one: keep the part up to the farthest branch
+        branches = [p for t in tracks if t.GetLayer() == layer for p in (_mm(t.GetStart()), _mm(t.GetEnd()))
+                    if _seg_dist(p, a, b) <= half and math.dist(p, keep) > half]
+        if not branches:
+            board.Remove(item)
+        else:
+            far = max(branches, key=lambda p: math.dist(p, keep))
+            length = math.dist(a, b)
+            along = max(0.0, min(length, ((far[0] - keep[0]) * (loose[0] - keep[0]) +
+                                          (far[1] - keep[1]) * (loose[1] - keep[1])) / length))
+            if length - along < 1e-3:
+                continue
+            new_end = pcbnew.VECTOR2I(pcbnew.FromMM(keep[0] + (loose[0] - keep[0]) * along / length),
+                                      pcbnew.FromMM(keep[1] + (loose[1] - keep[1]) * along / length))
+            if a_ok:
+                item.SetEnd(new_end)
+            else:
+                item.SetStart(new_end)
+        changed += 1
+    return changed
+
+
 def run_drc(board):
     pcbnew.WriteDRCReport(board, DRC_PATH, pcbnew.EDA_UNITS_MILLIMETRES, True)
     counts, section = {}, None
@@ -680,6 +776,15 @@ def run_drc(board):
 
 
 def main():
+    if "--prune-once" in sys.argv:
+        # One clean-up step in a process of its own: pcbnew cannot reload a board within one process.
+        board = pcbnew.LoadBoard(PCB_PATH)
+        pcbnew.ZONE_FILLER(board).Fill(board.Zones())
+        changed = prune_dangling(board)
+        pcbnew.SaveBoard(PCB_PATH, board, True)
+        print("pruned %d" % changed)
+        return 0
+
     place_only = "--place-only" in sys.argv
     print("building board %.0f x %.0f mm" % (BOARD_W, BOARD_H))
     board, nets = build_board()
@@ -694,6 +799,17 @@ def main():
     add_silkscreen(board)
     pcbnew.SaveBoard(PCB_PATH, board, True)
 
+    if not place_only and not os.environ.get("PCB_NO_PRUNE"):
+        total = 0
+        for _ in range(8):
+            out = subprocess.run([sys.executable, os.path.abspath(__file__), "--prune-once"],
+                                 capture_output=True, text=True).stdout
+            changed = [int(line.split()[1]) for line in out.splitlines() if line.startswith("pruned ")]
+            if not changed or changed[0] == 0:
+                break
+            total += changed[0]
+        print("clean-up: %d unused via(s) / track end(s) removed" % total)
+
     # Reload through the project so the design rules of the .kicad_pro apply, then fill and check.
     board = pcbnew.LoadBoard(PCB_PATH)
     pcbnew.ZONE_FILLER(board).Fill(board.Zones())
@@ -705,7 +821,9 @@ def main():
                            else "MISMATCH\n  " + "\n  ".join(mismatches)))
     tracks = [t for t in board.GetTracks()]
     n_vias = sum(1 for t in tracks if t.GetClass() == "PCB_VIA")
-    print("board: %d footprints, %d track segments, %d vias" % (len(board.GetFootprints()), len(tracks) - n_vias, n_vias))
+    drills = sorted(set(pcbnew.ToMM(t.GetDrill()) for t in tracks if t.GetClass() == "PCB_VIA"))
+    print("board: %d footprints, %d track segments, %d vias (drill %s mm)"
+          % (len(board.GetFootprints()), len(tracks) - n_vias, n_vias, "/".join("%.2f" % d for d in drills)))
     print("DRC: %d unconnected, violations: %s" % (unconnected, counts or "none"))
     print("report: %s" % os.path.relpath(DRC_PATH, os.path.dirname(G.HW)))
     return 0 if (not counts and not unconnected and not mismatches) else 1

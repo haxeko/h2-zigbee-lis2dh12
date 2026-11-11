@@ -185,8 +185,8 @@ LED và nút nhấn trong file đó chỉ là gợi ý ("or equivalent"), chưa 
 | Kích thước | 20 × 36 mm, bo góc R 0,8 mm, dày 1,6 mm |
 | Lớp | 4: F.Cu linh kiện + tín hiệu / In1.Cu GND liền / In2.Cu +3V3 / B.Cu tín hiệu |
 | Lắp ráp | Toàn bộ 38 linh kiện ở mặt trên; mặt dưới chỉ có pad pin và test pad |
-| Luật thiết kế | Track/khe hở 0,15/0,15 mm; đường nguồn 0,3 mm; via 0,45 mm, lỗ 0,2 mm; cách mép 0,3 mm |
-| Đồng | 218 đoạn track, 76 via; GND đổ trên cả lớp trên và lớp dưới |
+| Luật thiết kế | Track/khe hở 0,15/0,15 mm; đường nguồn 0,3 mm; **via 0,6 mm, lỗ 0,3 mm**; cách mép 0,3 mm |
+| Đồng | 228 đoạn track, 70 via (tất cả lỗ 0,3 mm); GND đổ trên cả lớp trên và lớp dưới |
 | DRC KiCad | 0 lỗi, 0 net chưa nối (`out/drc-report.txt`) |
 
 Bố trí:
@@ -210,14 +210,15 @@ Cách đi dây:
 - **Hai mặt phẳng trong không bị cắt.** Mọi tín hiệu nằm ở lớp trên và lớp dưới; In1 là GND liền,
   In2 là +3V3. Mỗi chân GND/+3V3 có via riêng xuống mặt phẳng.
 - **Tụ lọc của module** (C6, C5) nằm ngay dưới chân 13 (GND) và 14 (3V3), nối bằng hai đường thẳng 0,3 mm.
-- **USB-C**: bốn pad D+/D− bước 0,5 mm được nối chéo ngay phía trên đầu nối (một via cho D+), đi
-  qua U5 rồi R14/R15, sau đó chạy cặp ở lớp dưới tới chân 23/24 của module.
+- **USB-C**: bốn pad D+/D− bước 0,5 mm được nối chéo ngay phía trên đầu nối (một via 0,6 mm cho
+  D+, đường D− bên cạnh né sớm sang trái để đủ khe hở), đi qua U5 rồi R14/R15 tới chân 23/24 của
+  module; đoạn dưới thân module nằm ở lớp dưới.
 - **LIS2DH12**: không có track hay via dưới thân linh kiện; I2C đi thẳng sang điện trở kéo, INT1/INT2
-  đi lên rồi xuống lớp dưới.
+  đi lên phía module.
 - Các chỗ khó (USB-C, LIS2DH12, tụ lọc, hàng rào via) được **vẽ tay bằng toạ độ** trong
   `pre_routes()` của `gen_pcb.py`; phần còn lại do bộ đi dây lưới 0,05 mm trong `router.py` tự tìm
   (KiCad không có autorouter). Vì các đoạn vẽ tay gắn với toạ độ, khi dời linh kiện trong bảng
-  `PLACE` phải sửa cả `pre_routes()`.
+  `PLACE` phải sửa cả `pre_routes()`. Via vẽ tay nào bộ đi dây không cần tới sẽ được gỡ ở bước dọn cuối.
 
 Board còn có thể ngắn hơn khoảng 2 mm nếu xếp dày hơn bằng tay, hoặc ngắn hơn nhiều (~20 × 26 mm)
 nếu chấp nhận lắp linh kiện hai mặt. Với cell 500 mAh cỡ 25 × 35 mm đặt dưới board thì 20 × 36 mm
@@ -226,8 +227,9 @@ nếu chấp nhận lắp linh kiện hai mặt. Với cell 500 mAh cỡ 25 × 3
 ### Đặt sản xuất
 
 - PCB 4 lớp, FR-4 1,6 mm (1,0 mm cũng được nếu cần nhẹ hơn), đồng 1 oz ngoài / 0,5 oz trong.
-- Năng lực tối thiểu cần có: track/khe hở 0,15 mm, **via lỗ 0,2 mm / vành 0,45 mm**. Đây là mức
-  phổ biến cho board 4 lớp nhưng một số nhà sản xuất tính thêm phí cho lỗ 0,2 mm; hãy kiểm tra.
+- Năng lực cần có: track/khe hở 0,15 mm; via đường kính 0,6 mm, lỗ 0,3 mm (vành khuyên 0,15 mm).
+  Lỗ nhỏ nhất trên board là 0,3 mm; các lỗ còn lại là 0,6 mm (chân vỏ USB-C) và 0,65 mm (chốt định
+  vị USB-C, không mạ). Đây là mức tiêu chuẩn, thường không bị tính phụ phí.
 - Upload `out/fab/activity-badge-gerbers.zip`. File toạ độ linh kiện dùng tên cột của KiCad
   (gốc ở góc trên trái, Y âm); nhà lắp ráp có thể yêu cầu đổi tên cột và kiểm tra lại góc xoay.
 - Module U1 nhô ra ngoài mép board 6 mm: báo cho nhà lắp ráp và chừa khoảng trống ở mép đó khi ghép panel.

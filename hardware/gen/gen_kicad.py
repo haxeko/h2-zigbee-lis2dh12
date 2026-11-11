@@ -982,7 +982,7 @@ def build_footprint():
     return "\n".join(out) + "\n"
 
 
-# PCB design rules: 4-layer board, 0.15 mm track / space, 0.45 / 0.2 mm vias.
+# PCB design rules: 4-layer board, 0.15 mm track / space, vias 0.6 mm with a 0.3 mm hole.
 # Shared with gen_pcb.py, which lays the board out to these numbers.
 PCB_TRACK = {"signal": 0.15, "power": 0.3}
 PCB_RULES = {
@@ -991,8 +991,8 @@ PCB_RULES = {
     "min_hole_clearance": 0.2, "min_hole_to_hole": 0.25,
     "min_microvia_diameter": 0.2, "min_microvia_drill": 0.1, "min_resolved_spokes": 1,
     "min_silk_clearance": 0.0, "min_text_height": 0.6, "min_text_thickness": 0.08,
-    "min_through_hole_diameter": 0.2, "min_track_width": 0.15, "min_via_annular_width": 0.1,
-    "min_via_diameter": 0.45, "solder_mask_clearance": 0.0, "solder_mask_min_width": 0.0,
+    "min_through_hole_diameter": 0.3, "min_track_width": 0.15, "min_via_annular_width": 0.15,
+    "min_via_diameter": 0.6, "solder_mask_clearance": 0.0, "solder_mask_min_width": 0.0,
     "solder_mask_to_copper_clearance": 0.0, "use_height_for_length_calcs": True,
 }
 # The footprint-library checks need the user's global library table, which a
