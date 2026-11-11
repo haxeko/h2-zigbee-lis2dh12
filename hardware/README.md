@@ -53,8 +53,10 @@ USB-C VBUS 5 V ──► MCP73831 (sạc 213 mA) ──► VBAT (LiPo 1S 3,0–4
   nguồn cấp ≥ 350 mA).
 - Khi pin xuống dưới ~3,4 V LDO vào vùng sụt áp, +3V3 bám theo VBAT; module làm việc tới 3,0 V.
 - LIS2DH12 không được cắt nguồn: nó phải lấy mẫu liên tục trong lúc MCU ngủ.
-- Cell LiPo phải là loại **có mạch bảo vệ (PCM)**. Luôn nối pin khi dùng: MCP73831 không ổn định
-  nếu chạy không pin.
+- Cell LiPo phải là loại **có mạch bảo vệ (PCM)**.
+- **Nối pin khi dùng và khi nạp firmware qua USB.** Board không có đường nguồn riêng từ VBUS tới
+  LDO: khi chỉ cắm USB, mọi dòng tải đều đi qua IC sạc. Hành vi của MCP73831 khi không có pin (ngắt
+  sạc rồi sạc lại liên tục) chưa được kiểm chứng trên board này.
 
 ## 3. Sơ đồ chân ESP32-H2-WROOM-02C
 
