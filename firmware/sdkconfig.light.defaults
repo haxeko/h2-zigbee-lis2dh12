@@ -1,0 +1,4 @@
+# Overlay: light-sleep strategy (Zigbee stack stays up between reports).
+# idf.py -B build_light -D SDKCONFIG=build_light/sdkconfig \
+#        -D SDKCONFIG_DEFAULTS="sdkconfig.defaults;sdkconfig.light.defaults" build
+CONFIG_BADGE_POWER_MODE_LIGHT_SLEEP=y

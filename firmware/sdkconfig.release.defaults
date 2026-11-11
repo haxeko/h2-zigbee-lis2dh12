@@ -1,0 +1,6 @@
+# Overlay: production build. Logging costs awake time (UART at 115200 baud is
+# ~87 us per character), so only errors are printed.
+# idf.py -B build_release -D SDKCONFIG=build_release/sdkconfig \
+#        -D SDKCONFIG_DEFAULTS="sdkconfig.defaults;sdkconfig.release.defaults" build
+CONFIG_LOG_DEFAULT_LEVEL_ERROR=y
+CONFIG_BOOTLOADER_LOG_LEVEL_NONE=y

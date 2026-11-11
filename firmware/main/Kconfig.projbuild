@@ -1,0 +1,107 @@
+menu "Activity badge"
+
+    choice BADGE_POWER_MODE
+        prompt "Sleep strategy between reports"
+        default BADGE_POWER_MODE_DEEP_SLEEP
+        help
+            How the ESP32-H2 sleeps while the LIS2DH12 keeps sampling into its FIFO.
+
+        config BADGE_POWER_MODE_DEEP_SLEEP
+            bool "Deep sleep (Zigbee stack restarts and rejoins for every report)"
+            help
+                Lowest sleep current (about 7 uA for the chip), but every wake-up is a
+                full boot and every report a Zigbee rejoin. Each report can pick a nearer
+                router again, which suits a wearer who moves around.
+
+        config BADGE_POWER_MODE_LIGHT_SLEEP
+            bool "Light sleep (Zigbee stack stays up, no rejoin)"
+            help
+                About 25 uA sleep current for the chip, but a report is only a short
+                radio burst and reading the sensor FIFO needs no boot. Estimated to give
+                the longer battery life (see docs/power.md). Requires the console on
+                UART0 or disabled.
+
+    endchoice
+
+    config BADGE_REPORT_SAMPLES
+        int "Samples per activity report (1 Hz, so seconds)"
+        range 10 3600
+        default 60
+        help
+            activity_score is the mean of |a_mag - 1 g| over this many samples.
+            60 samples at 1 Hz gives one report per minute.
+
+    config BADGE_BACKOFF_MAX_PERIODS
+        int "Longest pause between attempts when the network is unreachable (report periods)"
+        range 1 240
+        default 16
+        help
+            After a failed attempt the badge waits 1, 2, 4, ... report periods before
+            trying again, up to this limit. Samples keep accumulating meanwhile.
+
+    config BADGE_JOIN_WINDOW_S
+        int "Pairing window after power-up or a button press (seconds)"
+        range 10 600
+        default 180
+        help
+            How long a factory-new badge keeps looking for a network that permits joining.
+
+    config BADGE_SERVICE_WINDOW_S
+        int "Time the badge stays reachable after pairing or a button press (seconds)"
+        range 5 300
+        default 45
+        help
+            The badge polls its parent once per second during this window so that
+            Zigbee2MQTT can interview and configure it.
+
+    config BADGE_REJOIN_TIMEOUT_MS
+        int "Time allowed to get back on the network before a report (ms)"
+        range 1000 60000
+        default 8000
+
+    config BADGE_BATTERY_SENSE
+        bool "Measure and report the battery voltage"
+        default y
+        help
+            Disable on a bare devkit without the battery divider.
+
+    config BADGE_BATTERY_REPORT_PERIOD
+        int "Report the battery every N activity reports"
+        depends on BADGE_BATTERY_SENSE
+        range 1 1440
+        default 10
+
+    config BADGE_ZB_CHANNEL_MASK
+        hex "Zigbee channels scanned first when pairing"
+        range 0x800 0x07FFF800
+        default 0x07FFF800
+        help
+            Bit n = channel n (11..26). Set only the channel of your Zigbee2MQTT
+            network (e.g. 0x800 for channel 11) to make pairing faster and cheaper.
+
+    config BADGE_ZB_TX_POWER_DBM
+        int "Zigbee transmit power (dBm)"
+        range -24 20
+        default 10
+        help
+            TX current is about 36 mA at 0 dBm, 60 mA at 9 dBm and 140 mA at 20 dBm.
+
+    config BADGE_ZB_POLL_INTERVAL_S
+        int "Parent poll interval while idle (seconds)"
+        range 1 900
+        default 300
+        help
+            Only matters in light-sleep mode, where the stack stays up between
+            reports. Must stay well below the 64-minute end-device timeout.
+
+    config BADGE_ZB_MANUFACTURER
+        string "Zigbee manufacturer name (Basic cluster)"
+        default "ActivityBadge"
+
+    config BADGE_ZB_MODEL
+        string "Zigbee model identifier (Basic cluster)"
+        default "AB-H2-LIS2DH12"
+        help
+            Zigbee2MQTT selects the converter by this string (zigbeeModel).
+
+endmenu

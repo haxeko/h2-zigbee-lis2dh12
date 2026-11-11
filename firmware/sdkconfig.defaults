@@ -1,0 +1,34 @@
+# Activity badge — defaults for ESP32-H2-WROOM-02C-H4S (4 MB flash).
+# Applied on top of the ESP-IDF defaults by `idf.py set-target esp32h2`.
+CONFIG_IDF_TARGET="esp32h2"
+
+# Flash / partitions
+CONFIG_ESPTOOLPY_FLASHSIZE_4MB=y
+CONFIG_PARTITION_TABLE_CUSTOM=y
+CONFIG_PARTITION_TABLE_CUSTOM_FILENAME="partitions.csv"
+
+# Zigbee end device (esp-zigbee-lib 2.x)
+CONFIG_ZB_ENABLED=y
+CONFIG_ZB_ZED=y
+
+# Console on UART0 (TXD0 = GPIO24, RXD0 = GPIO23, test pads TP4/TP5).
+# The USB-Serial-JTAG console cannot be used: USB does not survive sleep.
+CONFIG_ESP_CONSOLE_UART_DEFAULT=y
+CONFIG_ESP_CONSOLE_SECONDARY_NONE=y
+
+# Deep sleep: boot as fast as possible after every wake-up
+CONFIG_BOOTLOADER_SKIP_VALIDATE_IN_DEEP_SLEEP=y
+CONFIG_BOOTLOADER_LOG_LEVEL_NONE=y
+CONFIG_RTC_CLK_SRC_INT_RC=y
+
+# Light sleep: automatic via power management + tickless idle.
+# Harmless in deep-sleep mode (esp_pm_configure() is not called there).
+CONFIG_PM_ENABLE=y
+CONFIG_FREERTOS_USE_TICKLESS_IDLE=y
+CONFIG_FREERTOS_HZ=1000
+CONFIG_PM_POWER_DOWN_PERIPHERAL_IN_LIGHT_SLEEP=y
+CONFIG_IEEE802154_SLEEP_ENABLE=y
+CONFIG_ESP_SLEEP_POWER_DOWN_FLASH=y
+
+# Main task: FIFO burst buffer + float formatting
+CONFIG_ESP_MAIN_TASK_STACK_SIZE=4096

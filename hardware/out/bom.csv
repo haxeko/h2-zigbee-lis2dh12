@@ -1,0 +1,36 @@
+Ref,Qty,Value,Description,Footprint,MPN,Notes
+U1,1,ESP32-H2-WROOM-02C-H4S,"Espressif 802.15.4 / BLE module, ESP32-H2, 4 MB flash, PCB antenna",badge:ESP32-H2-WROOM-02C,ESP32-H2-WROOM-02C-H4S,Project-local symbol + footprint (datasheet v1.2 land pattern)
+U2,1,LIS2DH12TR,"ST 3-axis accelerometer, I2C, LGA-12 2x2 mm",Package_LGA:LGA-12_2x2mm_P0.5mm,LIS2DH12TR,Drawn with the pin-compatible LIS2DE12 library symbol; I2C address 0x19 (SA0 = 1)
+U3,1,RT9080-33GJ5,"Richtek 3.3 V LDO, 600 mA, Iq 2 uA, TSOT-23-5",Package_TO_SOT_SMD:TSOT-23-5,RT9080-33GJ5,"Pinout 1=VIN 2=GND 3=EN 4=NC 5=VOUT - verify against the datasheet; same-pinout alternates: TPS7A0533PDBV (200 mA), XC6220B331MR-G"
+U4,1,MCP73831T-2ACI/OT,"Microchip single-cell Li-Po charger, 4.20 V, SOT-23-5",Package_TO_SOT_SMD:SOT-23-5,MCP73831T-2ACI/OT,
+U5,1,USBLC6-2SC6,"ST USB ESD protection, SOT-23-6",Package_TO_SOT_SMD:SOT-23-6,USBLC6-2SC6,
+Q1,1,AO3401A,"P-channel MOSFET -30 V, SOT-23 (battery-sense high-side switch)",Package_TO_SOT_SMD:SOT-23,AO3401A,or equivalent
+Q2,1,2N7002,"N-channel MOSFET 60 V, SOT-23 (level shifter for Q1 gate)",Package_TO_SOT_SMD:SOT-23,2N7002,or equivalent
+D1,1,GREEN,LED green 0603 (status),LED_SMD:LED_0603_1608Metric,LTST-C191KGKT,or equivalent
+D2,1,ORANGE,LED orange 0603 (charging),LED_SMD:LED_0603_1608Metric,LTST-C191KFKT,or equivalent
+J1,1,USB-C 16P,"USB Type-C receptacle, USB 2.0, 16 pin, SMD (HRO)",Connector_USB:USB_C_Receptacle_HRO_TYPE-C-31-M-12,TYPE-C-31-M-12,
+J2,1,JST-PH 2P (LiPo),JST PH 2-pin SMD horizontal battery connector,Connector_JST:JST_PH_S2B-PH-SM4-TB_1x02-1MP_P2.00mm_Horizontal,S2B-PH-SM4-TB,"Pin 1 = BAT+, pin 2 = BAT-. Check the cell's connector polarity before plugging in"
+SW1,1,BOOT/USER,"Tactile switch SPST, SMD",Button_Switch_SMD:SW_SPST_TL3342,TL3342F160QG,GPIO9: boot strap + user button; or equivalent
+SW2,1,RESET,"Tactile switch SPST, SMD",Button_Switch_SMD:SW_SPST_TL3342,TL3342F160QG,EN to GND; or equivalent
+"R1, R2",2,5.1k,Resistor 5.1 k 1% 0402,Resistor_SMD:R_0402_1005Metric,RC0402FR-075K1L,or equivalent
+R3,1,4.7k,Resistor 4.7 k 1% 0402,Resistor_SMD:R_0402_1005Metric,RC0402FR-074K7L,Ichg = 1000 V / R3; or equivalent
+R4,1,1k,Resistor 1 k 1% 0402,Resistor_SMD:R_0402_1005Metric,RC0402FR-071KL,or equivalent
+"R5, R6",2,4.7k,Resistor 4.7 k 1% 0402,Resistor_SMD:R_0402_1005Metric,RC0402FR-074K7L,or equivalent
+"R7, R8",2,10k,Resistor 10 k 1% 0402,Resistor_SMD:R_0402_1005Metric,RC0402FR-0710KL,or equivalent
+R9,1,2.2k,Resistor 2.2 k 1% 0402,Resistor_SMD:R_0402_1005Metric,RC0402FR-072K2L,or equivalent
+"R10, R11",2,1M,Resistor 1 M 1% 0402,Resistor_SMD:R_0402_1005Metric,RC0402FR-071ML,or equivalent
+"R12, R13",2,100k 1%,Resistor 100 k 1% 0402,Resistor_SMD:R_0402_1005Metric,RC0402FR-07100KL,or equivalent
+"R14, R15",2,0R,Resistor 0 R 0402,Resistor_SMD:R_0402_1005Metric,RC0402JR-070RL,or equivalent
+C1,1,10uF/16V,Capacitor 10 uF 16 V X5R 0603,Capacitor_SMD:C_0603_1608Metric,CL10A106KO8NNNC,or equivalent
+"C2, C5, C8",3,10uF,Capacitor 10 uF 10 V X5R 0603,Capacitor_SMD:C_0603_1608Metric,CL10A106KP8NNNC,or equivalent
+C3,1,1uF,Capacitor 1 uF 16 V X5R 0402,Capacitor_SMD:C_0402_1005Metric,CL05A105KO5NNNC,or equivalent
+C4,1,22uF,Capacitor 22 uF 6.3 V X5R 0805,Capacitor_SMD:C_0805_2012Metric,CL21A226MQQNNNE,or equivalent
+"C6, C7, C9, C11",4,100nF,Capacitor 100 nF 16 V X7R 0402,Capacitor_SMD:C_0402_1005Metric,CL05B104KO5NNNC,or equivalent
+C10,1,10nF,Capacitor 10 nF 50 V X7R 0402,Capacitor_SMD:C_0402_1005Metric,CL05B103KB5NNNC,or equivalent
+TP1,1,+3V3,Test pad 1.0 mm,TestPoint:TestPoint_Pad_D1.0mm,,No part to fit
+TP2,1,GND,Test pad 1.0 mm,TestPoint:TestPoint_Pad_D1.0mm,,No part to fit
+TP3,1,VBAT,Test pad 1.0 mm,TestPoint:TestPoint_Pad_D1.0mm,,No part to fit
+TP4,1,UART_TX,Test pad 1.0 mm,TestPoint:TestPoint_Pad_D1.0mm,,No part to fit
+TP5,1,UART_RX,Test pad 1.0 mm,TestPoint:TestPoint_Pad_D1.0mm,,No part to fit
+TP6,1,EN,Test pad 1.0 mm,TestPoint:TestPoint_Pad_D1.0mm,,No part to fit
+TP7,1,BOOT,Test pad 1.0 mm,TestPoint:TestPoint_Pad_D1.0mm,,No part to fit
